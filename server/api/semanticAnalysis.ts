@@ -281,7 +281,10 @@ async function performKeywordSearch(
       MATCH (n)
       WHERE n.content IS NOT NULL ${typeFilter}
       WITH n, n.content AS content
-      WHERE ${searchTerms.map(term => `toLower(content) CONTAINS '${term.replace(/'/g, "\\'")}'`).join(' OR ')}
+      WHERE ${searchTerms.map(term => {
+        const safeTerm = term.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        return `toLower(content) CONTAINS '${safeTerm}'`;
+      }).join(' OR ')}
       RETURN n.id AS id, n.type AS type, n.content AS content
       LIMIT ${limit}
     `;
